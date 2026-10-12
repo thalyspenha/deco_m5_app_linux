@@ -14,7 +14,7 @@
    - [ ] Validar visual no Omarchy (pelo usuário)
    - [ ] Renomear cliente (descobrir opcode)
    - [x] Detalhe do Deco: papel, Deco anterior, sinal do backhaul, modelo/IP/MAC/firmware, clientes do nó
-   - [ ] Validar "Reiniciar este Deco" (`Session::reboot_node`) na rede real
+   - [x] "Reiniciar este Deco" validado na rede real (~2 min fora, só o nó)
    - [ ] Ícone e `.desktop`, pacote AUR
 2. [ ] **Testar `wifi` on/off** na rede real (mexe na rede, precisa confirmação).
 3. [ ] **Configuração via TMP** (opcodes em `docs/PROTOCOL.md`)
