@@ -12,7 +12,7 @@
 1. [ ] **Interface gráfica** (em andamento)
    - [x] Validar visual no Mac
    - [ ] Validar visual no Omarchy (pelo usuário)
-   - [ ] Detalhe do cliente: renomear, bloquear, ver qual Deco está conectado
+   - [ ] Renomear cliente (descobrir opcode)
    - [ ] Detalhe do Deco: sinal, clientes por nó, reiniciar só um
    - [ ] Ícone e `.desktop`, pacote AUR
 2. [ ] **Testar `wifi` on/off** na rede real (mexe na rede, precisa confirmação).
@@ -20,7 +20,9 @@
    - [x] Primeiro SET de baixo risco: criar/remover reserva de IP (envelope `params` + `config_version`)
    - [x] API tipada (`tmp_config.rs`); validar SETs de port forwarding e bloqueio
    - [x] Tela "Conexão de internet" (tipo, IPv4, DNS editável, MTU); salvar DNS validado na rede real
-   - [ ] Reserva de IP, port forwarding, bloquear cliente na GUI
+   - [x] Detalhe do cliente: IP, MAC, rede, Deco conectado, reservar IP, bloquear
+   - [x] Página de dispositivos bloqueados com desbloquear
+   - [ ] Port forwarding na GUI (validar SET antes)
    - [ ] DNS/WAN e LAN/DHCP (risco de cortar rede; testar com cuidado)
    - [ ] `DECO_USERNAME` (e-mail TP-Link ID) no login da GUI/keyring
 

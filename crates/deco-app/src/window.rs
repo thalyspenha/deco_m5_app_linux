@@ -6,7 +6,7 @@ use deco_api::{Client, Network, Node, Session, Wan, WifiNetwork, WifiState};
 use gtk::{gio, glib};
 
 use crate::credentials::{self, Credentials};
-use crate::internet;
+use crate::{blocked, client, internet};
 
 /// Auto-refresh interval. Each refresh is a full login/logout, which briefly
 /// kicks the official app, so it only runs while the window is focused.
@@ -45,6 +45,8 @@ pub(crate) struct App {
     pub(crate) busy: Cell<bool>,
     /// Set while the UI is updated from router data, so switch handlers don't fire writes.
     syncing: Cell<bool>,
+    /// Dev aid: client name to open after the first refresh (`DECO_OPEN=client:<name>`).
+    open_client: RefCell<Option<String>>,
 }
 
 pub fn build(application: &adw::Application) {
@@ -98,6 +100,13 @@ pub fn build(application: &adw::Application) {
     page.add(&nodes_group);
     let clients_group = adw::PreferencesGroup::builder().title("Clientes").build();
     page.add(&clients_group);
+
+    let more_group = adw::PreferencesGroup::new();
+    let blocked_row = adw::ActionRow::builder().title("Dispositivos bloqueados").activatable(true).build();
+    blocked_row.add_prefix(&gtk::Image::from_icon_name("action-unavailable-symbolic"));
+    blocked_row.add_suffix(&gtk::Image::from_icon_name("go-next-symbolic"));
+    more_group.add(&blocked_row);
+    page.add(&more_group);
 
     // Login page
     let login_host = adw::EntryRow::builder().title("Endereço do Deco").build();
@@ -158,9 +167,11 @@ pub fn build(application: &adw::Application) {
         creds: RefCell::new(credentials::load()),
         busy: Cell::new(false),
         syncing: Cell::new(false),
+        open_client: RefCell::default(),
     });
 
     refresh_btn.connect_clicked(glib::clone!(#[strong] app, move |_| refresh(&app)));
+    blocked_row.connect_activated(glib::clone!(#[strong] app, move |_| blocked::open(&app)));
     app.internet_row.connect_activated(glib::clone!(#[strong] app, move |_| internet::open(&app)));
     login_btn.connect_clicked(glib::clone!(#[strong] app, move |_| submit_login(&app)));
     app.login_pass.connect_entry_activated(glib::clone!(#[strong] app, move |_| submit_login(&app)));
@@ -192,9 +203,12 @@ pub fn build(application: &adw::Application) {
     if app.creds.borrow().is_some() {
         refresh(&app);
         // Dev aid for screenshots: open a subpage directly.
-        if std::env::var("DECO_OPEN").as_deref() == Ok("internet") {
-            internet::open(&app);
+        match std::env::var("DECO_OPEN").as_deref() {
+            Ok("internet") => internet::open(&app),
+            Ok("blocked") => blocked::open(&app),
+            _ => {}
         }
+        app.open_client.replace(std::env::var("DECO_OPEN").ok().and_then(|v| v.strip_prefix("client:").map(str::to_owned)));
     } else {
         app.stack.set_visible_child_name("login");
     }
@@ -227,11 +241,15 @@ pub(crate) fn toast(app: &App, msg: &str) {
     app.toasts.add_toast(adw::Toast::new(msg));
 }
 
-fn refresh(app: &Rc<App>) {
+pub(crate) fn refresh(app: &Rc<App>) {
     run(app, fetch, |app, res| match res {
         Ok(snap) => {
             show(app, &snap);
             app.stack.set_visible_child_name("main");
+            let wanted = app.open_client.take();
+            if let Some(c) = wanted.and_then(|n| snap.clients.iter().find(|c| c.name == n)) {
+                client::open(app, c);
+            }
         }
         Err(deco_api::Error::Login) if app.stack.visible_child_name().as_deref() != Some("main") => {
             app.stack.set_visible_child_name("login");
@@ -272,7 +290,7 @@ fn submit_login(app: &Rc<App>) {
     });
 }
 
-fn show(app: &App, snap: &Snapshot) {
+fn show(app: &Rc<App>, snap: &Snapshot) {
     app.syncing.set(true);
 
     let online = snap.nodes.iter().find(|n| n.is_master).is_some_and(|n| n.online);
@@ -326,7 +344,9 @@ fn show(app: &App, snap: &Snapshot) {
         let row = adw::ActionRow::builder()
             .title(glib::markup_escape_text(&c.name))
             .subtitle(client_subtitle(c))
+            .activatable(true)
             .build();
+        row.connect_activated(glib::clone!(#[strong] app, #[strong] c, move |_| client::open(&app, &c)));
         row.add_prefix(&gtk::Image::from_icon_name(client_icon(c)));
         let speed = gtk::Label::new(Some(&format!("↓ {}  ↑ {}", speed(c.down_kbps), speed(c.up_kbps))));
         speed.add_css_class("dim-label");
@@ -338,6 +358,18 @@ fn show(app: &App, snap: &Snapshot) {
 
     app.dynamic_rows.replace(rows);
     app.syncing.set(false);
+}
+
+/// "Principal · 5 GHz", "Convidados · Wi-Fi", "Cabo".
+pub(crate) fn connection_label(c: &Client) -> String {
+    let net = match c.network {
+        Network::Main | Network::Unknown => "Principal",
+        Network::Guest => "Convidados",
+        Network::Iot => "IoT",
+        Network::Wired => return "Cabo".into(),
+    };
+    let band = if c.band.is_empty() { "Wi-Fi" } else { c.band.as_str() };
+    format!("{net} · {band}")
 }
 
 fn client_subtitle(c: &Client) -> String {
@@ -356,7 +388,7 @@ fn client_subtitle(c: &Client) -> String {
     format!("{net}{}{band}", c.ip)
 }
 
-fn client_icon(c: &Client) -> &'static str {
+pub(crate) fn client_icon(c: &Client) -> &'static str {
     let name = c.name.to_lowercase();
     let has = |keys: &[&str]| keys.iter().any(|k| name.contains(k));
     if c.network == Network::Wired {
@@ -372,7 +404,7 @@ fn client_icon(c: &Client) -> &'static str {
     }
 }
 
-fn speed(kbps: u64) -> String {
+pub(crate) fn speed(kbps: u64) -> String {
     if kbps >= 1024 {
         format!("{:.1} MB/s", kbps as f64 / 1024.0)
     } else {

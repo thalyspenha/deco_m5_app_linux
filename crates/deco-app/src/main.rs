@@ -1,3 +1,5 @@
+mod blocked;
+mod client;
 mod credentials;
 mod internet;
 mod window;

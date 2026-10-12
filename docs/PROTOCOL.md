@@ -81,7 +81,13 @@ SETs validados (2026-10-12, `examples/tmp_reservation_test.rs`): `0x40C1` add re
 
 API tipada em `crates/deco-api/src/tmp_config.rs`: `wan`, `dhcp`, `reservations`, `port_forwards`,
 `blocked_clients` (leitura validada) e `add/remove_reservation` (validado). **Não validados**:
-`add/delete_port_forward`, `block/unblock_client` (nome em base64), `set_dhcp`.
+`add/delete_port_forward`, `set_dhcp`.
+
+`block/unblock_client` **validados** (2026-10-12, `examples/tmp_block_test.rs`): block `0x4017`
+`{"client_list":[{"mac","name":<base64>}]}`, unblock `0x4019` `{"client_list":["<MAC>"]}`; efeito imediato.
+
+Deco de cada cliente: HTTP `admin/client?form=client_list` com `params.device_mac` = MAC do nó lista só
+os clientes daquele Deco (`Session::clients_of`); `"default"` lista todos. `access_host` não é o nó.
 
 `set_wan_dns` **validado** (2026-10-12, `examples/tmp_dns_test.rs`, PPPoE): payload mínimo como o app,
 `{"wan":{"dial_type","support_mtu_size","enable_auto_dns","mtu_size","ip_info":{"dns1","dns2"}}}`, sem

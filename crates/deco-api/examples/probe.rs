@@ -1,6 +1,6 @@
 //! Read-only smoke test against a real Deco. Reads DECO_HOST / DECO_PASSWORD from .env.
 //!
-//!     cargo run -p deco-api --example probe [raw-path]
+//!     cargo run -p deco-api --example probe [raw-path [params-json]]
 //!
 //! With a path (e.g. `admin/client?form=client_list`) it dumps the raw JSON
 //! of a read operation, useful for exploring endpoints.
@@ -15,7 +15,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let session = Session::login(&host, &password)?;
 
     if let Some(path) = std::env::args().nth(1) {
-        let raw = session.request(&path, &json!({"operation": "read"}))?;
+        let mut body = json!({"operation": "read"});
+        if let Some(params) = std::env::args().nth(2) {
+            body["params"] = serde_json::from_str(&params)?;
+        }
+        let raw = session.request(&path, &body)?;
         println!("{}", serde_json::to_string_pretty(&raw)?);
         return Ok(session.logout()?);
     }

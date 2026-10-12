@@ -78,9 +78,14 @@ impl Session {
 
     /// Online clients across the whole mesh.
     pub fn clients(&self) -> Result<Vec<Client>> {
+        self.clients_of("default")
+    }
+
+    /// Online clients attached to one Deco (`node_mac`), or `"default"` for all.
+    pub fn clients_of(&self, node_mac: &str) -> Result<Vec<Client>> {
         let data = self.request(
             "admin/client?form=client_list",
-            &json!({"operation": "read", "params": {"device_mac": "default"}}),
+            &json!({"operation": "read", "params": {"device_mac": node_mac}}),
         )?;
         Ok(list(&data, "client_list")
             .filter(|c| c["online"].as_bool().unwrap_or(false))
