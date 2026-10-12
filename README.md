@@ -64,6 +64,8 @@ No macOS, rode com `XDG_DATA_DIRS=/opt/homebrew/share` se os ícones aparecerem 
 
 ## Desenvolvimento
 
+Ao clonar, configure `git config user.email 36860610+thalyspenha@users.noreply.github.com`. Notas para continuar o desenvolvimento (inclusive com Claude Code) estão em [CLAUDE.md](CLAUDE.md).
+
 Copie `.env.example` para `.env` e preencha: com `DECO_PASSWORD` (e `DECO_USERNAME` para o TMP) o app pula a tela de login.
 
 ```sh
