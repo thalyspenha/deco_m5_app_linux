@@ -1,23 +1,29 @@
 # Decisões
 
-## Backend em Python + tplinkrouterc6u
-
-A lib já resolve a criptografia do login e suporta o Deco M5 v3. Reaproveitada pela CLI e pela GUI.
-
-## Stack da GUI — proposta: Python + GTK4 + libadwaita (PyGObject)
-
-Status: **aguardando confirmação**.
+## GUI: Rust + GTK4 + libadwaita (decidido 2026-10-12)
 
 Alvo: Omarchy Linux (Hyprland, Wayland).
 
-- Nativo Wayland, encaixa bem em tiling (Hyprland) e já é o toolkit da maioria dos apps do Omarchy.
-- libadwaita entrega visual moderno pronto (cards, listas, dark mode automático, layout responsivo).
-- Mesma linguagem do backend: zero ponte/IPC, reaproveita `deco_linux.core`.
-- Distribuição: pacote AUR / Flatpak.
-- Dá para desenvolver no Mac (`brew install gtk4 libadwaita pygobject3`).
+- Nativo Wayland, encaixa bem em tiling; GTK é o toolkit da maioria dos apps do Omarchy.
+- libadwaita entrega visual moderno pronto (listas, cards, dark mode, layout adaptativo).
+- Rust escolhido pelo usuário: binário único, leve, sem runtime Python para empacotar (AUR simples).
+- Bindings: `gtk4` 0.10 (feature `v4_12`), `libadwaita` 0.8 (feature `v1_5`).
 
-Alternativas avaliadas:
-- Rust + gtk4-rs/relm4: mesmo visual, binário rápido, mas reescreveria o backend.
-- Tauri/Electron (web UI): visual livre, mas pesado e destoa do sistema.
-- Qt/PySide6: maduro, mas visual menos alinhado ao ecossistema GNOME/Omarchy.
-- Textual (TUI): rápido de fazer, combina com Omarchy (muito terminal), mas não é "app gráfico".
+## Backend: cliente próprio em Rust (`deco-api`)
+
+Porte do protocolo implementado em `tplinkrouterc6u` (Python), que foi usado na prova de conceito (ver commit 2aea33a). Cliente HTTP bloqueante (`reqwest::blocking`) chamado em thread de trabalho via `gio::spawn_blocking`.
+
+## Credenciais no keyring
+
+`keyring` crate: Secret Service no Linux (gnome-keyring/KeePassXC), Keychain no macOS. `.env` só para desenvolvimento.
+
+## Auto-refresh só com janela em foco
+
+Cada refresh é login + logout, que derruba momentaneamente a sessão do app oficial. Atualiza a cada 15 s apenas enquanto a janela está ativa.
+
+## Alternativas descartadas
+
+- Python + GTK4: reaproveitaria a lib pronta, mas usuário preferiu Rust.
+- Tauri/Electron: pesado e destoa do sistema.
+- Qt: visual menos alinhado ao ecossistema GNOME/Omarchy.
+- Textual (TUI): não é app gráfico.

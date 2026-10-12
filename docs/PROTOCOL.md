@@ -3,8 +3,8 @@
 ## API HTTP local (usada hoje)
 
 - Endpoint: `http://<deco>/cgi-bin/luci/;stok=/...`, login com a senha do admin local.
-- Payload criptografado com RSA + AES. Implementado em `tplinkrouterc6u.TPLinkDecoClient`.
-- **Uma sessão admin por vez**: logar derruba o app oficial e vice-versa. Sempre fazer logout logo após a operação (`core.session()` faz isso).
+- **Uma sessão admin por vez**: logar derruba o app oficial e vice-versa. Sempre fazer logout logo após a operação (`Session` faz logout no drop).
+- Implementação em Rust: `crates/deco-api`. Referência original: `tplinkrouterc6u.TPLinkDecoClient`.
 - Cobre: firmware, nós mesh (topologia, papel, status de internet), clientes (IP, MAC, banda, velocidade), status WAN, liga/desliga Wi-Fi host/guest/IoT, reboot.
 
 ## TMP (TP-Link Mesh Protocol)

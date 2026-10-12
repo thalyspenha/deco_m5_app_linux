@@ -1,27 +1,40 @@
 # deco-linux
 
-Controle local de redes mesh TP-Link Deco (testado com Deco M5 v3.2, firmware 1.9.5) a partir do Linux, sem depender do app oficial Android/iOS.
+App GTK4/libadwaita para controlar redes mesh TP-Link Deco pela rede local, sem depender do app oficial Android/iOS. Feito para Omarchy Linux (Hyprland), roda em qualquer desktop com GTK4.
 
-Fala direto com a API HTTP local do Deco (login RSA/AES) via [`tplinkrouterc6u`](https://pypi.org/project/tplinkrouterc6u/).
+Testado com Deco M5 v3.2, firmware 1.9.5.
 
-## Setup
+## Recursos
+
+- Status da internet (IP WAN, tipo de conexão)
+- Topologia mesh: cada Deco, quem está ligado em quem, online/offline
+- Clientes conectados com banda e velocidade, atualizando a cada 15 s com a janela em foco
+- Liga/desliga Wi-Fi principal e de convidados
+- Reiniciar toda a rede
+- Senha guardada no keyring do sistema (Secret Service / Keychain)
+
+## Build
+
+Dependências: Rust stable, GTK 4.12+, libadwaita 1.5+.
 
 ```sh
-uv sync
-cp .env.example .env   # preencha DECO_HOST e DECO_PASSWORD
+# Arch / Omarchy
+sudo pacman -S rust gtk4 libadwaita
+# macOS (desenvolvimento)
+brew install rustup gtk4 libadwaita pkg-config
+
+cargo run -p deco-app --release
 ```
 
-## CLI
+Para desenvolvimento, `DECO_HOST` e `DECO_PASSWORD` num `.env` pulam a tela de login (veja `.env.example`).
 
-```sh
-uv run deco status              # resumo da rede
-uv run deco nodes               # lista os decos e a topologia mesh
-uv run deco clients             # clientes conectados, banda e velocidade
-uv run deco wifi guest on|off   # host / guest / iot
-uv run deco reboot --yes        # reinicia toda a rede mesh
-```
+## Estrutura
+
+- `crates/deco-api` — cliente da API HTTP local do Deco (login RSA + AES). `cargo run -p deco-api --example probe` faz um teste somente leitura.
+- `crates/deco-app` — app GTK4/libadwaita.
 
 ## Docs
 
 - [docs/ROADMAP.md](docs/ROADMAP.md) — o que falta fazer
-- [docs/PROTOCOL.md](docs/PROTOCOL.md) — notas sobre como o Deco se comunica
+- [docs/DECISIONS.md](docs/DECISIONS.md) — decisões de stack
+- [docs/PROTOCOL.md](docs/PROTOCOL.md) — notas sobre o protocolo do Deco

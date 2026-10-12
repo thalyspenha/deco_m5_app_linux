@@ -2,17 +2,21 @@
 
 ## Feito
 
-- [x] Prova de conceito: login na API HTTP local, leitura de firmware, nós mesh e clientes
-- [x] CLI `deco` (`status`, `nodes`, `clients`, `wifi`, `reboot`)
-- [x] Sessão curta (login → ação → logout) para não derrubar o app oficial
+- [x] Prova de conceito em Python (tplinkrouterc6u) — substituída pelo Rust, ver commit 2aea33a
+- [x] `deco-api` em Rust: login RSA/AES, nós, clientes, WAN, estado do Wi-Fi, set_wifi, reboot
+- [x] GUI GTK4/libadwaita v0: login com keyring, status, topologia, clientes, switches de Wi-Fi, reiniciar
 
 ## A fazer
 
-1. [ ] **Interface gráfica** (prioridade atual) — app nativo para Omarchy/Hyprland. Ver decisão de stack em [DECISIONS.md](DECISIONS.md).
-2. [ ] **Testar `wifi guest on/off`** na rede real (ainda não executado; mexe na rede).
-3. [ ] **Explorar a API local além da lib**: bloquear cliente, reserva de IP, port forwarding, QoS. Se faltar, investigar TMP (SSH porta 20001) via APK decompilado (jadx).
+1. [ ] **Interface gráfica** (em andamento)
+   - [ ] Validar visual no Mac e no Omarchy (screenshot pelo usuário)
+   - [ ] Detalhe do cliente: renomear, bloquear, ver qual Deco está conectado
+   - [ ] Detalhe do Deco: sinal, clientes por nó, reiniciar só um
+   - [ ] Ícone e `.desktop`, pacote AUR
+2. [ ] **Testar `wifi` on/off** na rede real (mexe na rede, precisa confirmação).
+3. [ ] **Explorar a API local além do implementado**: bloquear cliente, reserva de IP, port forwarding, QoS. Usar `cargo run -p deco-api --example probe <path>` para dumps. Se faltar, investigar TMP (SSH porta 20001) via APK decompilado (jadx).
 
 ## Pendências conhecidas
 
-- Os clientes Daikin aparecem com banda `unknown` (talvez rede IoT não mapeada pela lib).
-- `clients_total` do roteador (4) diverge da lista de dispositivos (6); a CLI conta pela lista.
+- Clientes Daikin vêm sem `connection_type` (banda vazia).
+- Aviso `g_settings_schema_source_lookup` no macOS (schemas GSettings do brew), inofensivo.
