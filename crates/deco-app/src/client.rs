@@ -9,7 +9,7 @@ use deco_api::{Client, Session};
 use gtk::glib;
 
 use crate::credentials::Credentials;
-use crate::window::{client_icon, connection_label, refresh, run, speed, toast, App};
+use crate::window::{detail_header, client_icon, connection_label, refresh, run, speed, toast, App};
 
 fn tmp(c: &Credentials) -> deco_api::Result<TmpSession> {
     let email = c.email.as_deref().ok_or(deco_api::Error::Protocol("e-mail do TP-Link ID não informado"))?;
@@ -27,6 +27,7 @@ struct Page {
     client: Client,
     deco_row: adw::ActionRow,
     reserve_row: adw::SwitchRow,
+    manage: adw::PreferencesGroup,
     /// Set while the switch is updated from router data, so it doesn't write back.
     syncing: std::cell::Cell<bool>,
 }
@@ -34,12 +35,7 @@ struct Page {
 pub fn open(app: &Rc<App>, client: &Client) {
     let prefs = adw::PreferencesPage::new();
 
-    let head = adw::StatusPage::builder()
-        .icon_name(client_icon(client))
-        .title(client.name.as_str())
-        .description(format!("↓ {}  ↑ {}", speed(client.down_kbps), speed(client.up_kbps)))
-        .css_classes(["compact"])
-        .build();
+    let head = detail_header(client_icon(client), &client.name, &format!("↓ {}  ↑ {}", speed(client.down_kbps), speed(client.up_kbps)));
     let head_group = adw::PreferencesGroup::new();
     head_group.add(&head);
     prefs.add(&head_group);
@@ -56,8 +52,9 @@ pub fn open(app: &Rc<App>, client: &Client) {
     let reserve_row = adw::SwitchRow::builder()
         .title("Reservar endereço IP")
         .subtitle(format!("Sempre usar {}", client.ip))
-        .visible(false)
         .build();
+    // Shown once the reservation state is known (needs TMP).
+    manage.set_visible(false);
     manage.add(&reserve_row);
     let block_btn = gtk::Button::builder()
         .label("Bloquear dispositivo")
@@ -74,8 +71,10 @@ pub fn open(app: &Rc<App>, client: &Client) {
     view.add_top_bar(&adw::HeaderBar::new());
     view.set_content(Some(&prefs));
     app.nav.push(&adw::NavigationPage::builder().title(client.name.as_str()).child(&view).build());
+    // The action button grabs focus on map, which would scroll to the bottom.
+    glib::idle_add_local_once(glib::clone!(#[weak] prefs, move || prefs.scroll_to_top()));
 
-    let page = Rc::new(Page { client: client.clone(), deco_row, reserve_row, syncing: Default::default() });
+    let page = Rc::new(Page { client: client.clone(), deco_row, reserve_row, manage, syncing: Default::default() });
     page.reserve_row.connect_active_notify(glib::clone!(#[strong] app, #[strong] page, move |row| {
         if !page.syncing.get() {
             set_reservation(&app, &page, row.is_active());
@@ -136,7 +135,7 @@ fn load(app: &Rc<App>, page: &Rc<Page>) {
                 if let Some(r) = d.reserved {
                     page.syncing.set(true);
                     page.reserve_row.set_active(r);
-                    page.reserve_row.set_visible(true);
+                    page.manage.set_visible(true);
                     page.syncing.set(false);
                 }
             }

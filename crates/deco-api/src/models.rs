@@ -14,6 +14,16 @@ pub struct Node {
     pub online: bool,
     pub firmware: String,
     pub hardware: String,
+    /// Backhaul signal per band (0 = none/wired or master, higher is better).
+    pub signal_2g: u8,
+    pub signal_5g: u8,
+}
+
+impl Node {
+    /// Best backhaul signal across bands, `None` for the master node.
+    pub fn signal(&self) -> Option<u8> {
+        (!self.is_master).then(|| self.signal_2g.max(self.signal_5g))
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -72,6 +82,8 @@ impl Session {
                 online: d["inet_status"] == "online",
                 firmware: s(d, "software_ver"),
                 hardware: s(d, "hardware_ver"),
+                signal_2g: level(&d["signal_level"]["band2_4"]),
+                signal_5g: level(&d["signal_level"]["band5"]),
             })
             .collect())
     }
@@ -152,6 +164,15 @@ impl Session {
         Ok(())
     }
 
+    /// Reboots a single Deco.
+    pub fn reboot_node(&self, mac: &str) -> Result<()> {
+        self.request(
+            "admin/device?form=system",
+            &json!({"operation": "reboot", "params": {"mac_list": [{"mac": mac}]}}),
+        )?;
+        Ok(())
+    }
+
     /// Reboots every Deco in the mesh.
     pub fn reboot_all(&self) -> Result<()> {
         let macs: Vec<Value> = self.nodes()?.into_iter().map(|n| json!({"mac": n.mac})).collect();
@@ -161,6 +182,10 @@ impl Session {
         )?;
         Ok(())
     }
+}
+
+fn level(v: &Value) -> u8 {
+    v.as_u64().or_else(|| v.as_str()?.parse().ok()).unwrap_or(0) as u8
 }
 
 pub(crate) fn list<'a>(data: &'a Value, key: &str) -> impl Iterator<Item = &'a Value> {

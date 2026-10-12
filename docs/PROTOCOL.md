@@ -89,6 +89,12 @@ API tipada em `crates/deco-api/src/tmp_config.rs`: `wan`, `dhcp`, `reservations`
 Deco de cada cliente: HTTP `admin/client?form=client_list` com `params.device_mac` = MAC do nó lista só
 os clientes daquele Deco (`Session::clients_of`); `"default"` lista todos. `access_host` não é o nó.
 
+Nós (`admin/device?form=device_list`): `signal_level` = `{"band2_4","band5"}` em string, nível do backhaul
+até o Deco anterior (0 no principal; o app usa o maior entre bandas, maior é melhor; GUI mostra
+1 Fraco, 2 Regular, 3+ Bom, escala inferida). `previous` = MAC do Deco anterior. Reiniciar um só:
+`admin/device?form=system` `operation: reboot` com `mac_list: [{"mac"}]` (mesmo do reboot geral; não validado
+com um nó só).
+
 `set_wan_dns` **validado** (2026-10-12, `examples/tmp_dns_test.rs`, PPPoE): payload mínimo como o app,
 `{"wan":{"dial_type","support_mtu_size","enable_auto_dns","mtu_size","ip_info":{"dns1","dns2"}}}`, sem
 `user_info`. Mandar o objeto `wan` inteiro (com `user_info.username` sem senha) retorna `error_code 0`

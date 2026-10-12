@@ -6,7 +6,7 @@ use deco_api::{Client, Network, Node, Session, Wan, WifiNetwork, WifiState};
 use gtk::{gio, glib};
 
 use crate::credentials::{self, Credentials};
-use crate::{blocked, client, internet};
+use crate::{blocked, client, deco, internet};
 
 /// Auto-refresh interval. Each refresh is a full login/logout, which briefly
 /// kicks the official app, so it only runs while the window is focused.
@@ -45,7 +45,7 @@ pub(crate) struct App {
     pub(crate) busy: Cell<bool>,
     /// Set while the UI is updated from router data, so switch handlers don't fire writes.
     syncing: Cell<bool>,
-    /// Dev aid: client name to open after the first refresh (`DECO_OPEN=client:<name>`).
+    /// Dev aid: page to open after the first refresh (`DECO_OPEN=client:<name>|deco:<name>`).
     open_client: RefCell<Option<String>>,
 }
 
@@ -208,7 +208,7 @@ pub fn build(application: &adw::Application) {
             Ok("blocked") => blocked::open(&app),
             _ => {}
         }
-        app.open_client.replace(std::env::var("DECO_OPEN").ok().and_then(|v| v.strip_prefix("client:").map(str::to_owned)));
+        app.open_client.replace(std::env::var("DECO_OPEN").ok().filter(|v| v.contains(':')));
     } else {
         app.stack.set_visible_child_name("login");
     }
@@ -246,9 +246,19 @@ pub(crate) fn refresh(app: &Rc<App>) {
         Ok(snap) => {
             show(app, &snap);
             app.stack.set_visible_child_name("main");
-            let wanted = app.open_client.take();
-            if let Some(c) = wanted.and_then(|n| snap.clients.iter().find(|c| c.name == n)) {
-                client::open(app, c);
+            // Dev aid (`DECO_OPEN=client:<name>` / `deco:<name>`).
+            match app.open_client.take().as_deref().map(|v| v.split_once(':')) {
+                Some(Some(("client", n))) => {
+                    if let Some(c) = snap.clients.iter().find(|c| c.name == n) {
+                        client::open(app, c);
+                    }
+                }
+                Some(Some(("deco", n))) => {
+                    if let Some(node) = snap.nodes.iter().find(|d| d.name == n) {
+                        deco::open(app, node, &snap.nodes);
+                    }
+                }
+                _ => {}
             }
         }
         Err(deco_api::Error::Login) if app.stack.visible_child_name().as_deref() != Some("main") => {
@@ -324,7 +334,11 @@ fn show(app: &Rc<App>, snap: &Snapshot) {
         let row = adw::ActionRow::builder()
             .title(&node.name)
             .subtitle(format!("{role} · {} · Deco {} v{}", node.ip, node.model, node.hardware))
+            .activatable(true)
             .build();
+        row.connect_activated(glib::clone!(#[strong] app, #[strong] node, #[strong(rename_to = all)] snap.nodes, move |_| {
+            deco::open(&app, &node, &all)
+        }));
         row.add_prefix(&gtk::Image::from_icon_name("network-workgroup-symbolic"));
         let state = gtk::Label::new(Some(if node.online { "Online" } else { "Offline" }));
         state.add_css_class(if node.online { "success" } else { "error" });
@@ -360,6 +374,22 @@ fn show(app: &Rc<App>, snap: &Snapshot) {
     app.syncing.set(false);
 }
 
+/// Icon + title + subtitle block at the top of detail pages. (`adw::StatusPage`
+/// has its own scroller and gets clipped inside a `PreferencesPage`.)
+pub(crate) fn detail_header(icon: &str, title: &str, subtitle: &str) -> gtk::Box {
+    let b = gtk::Box::builder()
+        .orientation(gtk::Orientation::Vertical)
+        .spacing(6)
+        .margin_top(12)
+        .margin_bottom(12)
+        .build();
+    let image = gtk::Image::builder().icon_name(icon).pixel_size(64).css_classes(["dim-label"]).build();
+    b.append(&image);
+    b.append(&gtk::Label::builder().label(title).css_classes(["title-1"]).wrap(true).justify(gtk::Justification::Center).build());
+    b.append(&gtk::Label::builder().label(subtitle).css_classes(["dim-label"]).build());
+    b
+}
+
 /// "Principal · 5 GHz", "Convidados · Wi-Fi", "Cabo".
 pub(crate) fn connection_label(c: &Client) -> String {
     let net = match c.network {
@@ -372,7 +402,7 @@ pub(crate) fn connection_label(c: &Client) -> String {
     format!("{net} · {band}")
 }
 
-fn client_subtitle(c: &Client) -> String {
+pub(crate) fn client_subtitle(c: &Client) -> String {
     let net = match c.network {
         Network::Main => "",
         Network::Guest => "Convidados · ",
