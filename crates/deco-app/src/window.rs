@@ -6,6 +6,7 @@ use deco_api::{Client, Network, Node, Session, Wan, WifiNetwork, WifiState};
 use gtk::{gio, glib};
 
 use crate::credentials::{self, Credentials};
+use crate::internet;
 
 /// Auto-refresh interval. Each refresh is a full login/logout, which briefly
 /// kicks the official app, so it only runs while the window is focused.
@@ -25,8 +26,9 @@ fn fetch(c: &Credentials) -> deco_api::Result<Snapshot> {
     Ok(snap)
 }
 
-struct App {
-    window: adw::ApplicationWindow,
+pub(crate) struct App {
+    pub(crate) window: adw::ApplicationWindow,
+    pub(crate) nav: adw::NavigationView,
     toasts: adw::ToastOverlay,
     stack: gtk::Stack,
     spinner: gtk::Spinner,
@@ -37,9 +39,10 @@ struct App {
     guest_switch: adw::SwitchRow,
     login_host: adw::EntryRow,
     login_pass: adw::PasswordEntryRow,
+    login_email: adw::EntryRow,
     dynamic_rows: RefCell<Vec<(adw::PreferencesGroup, adw::ActionRow)>>,
-    creds: RefCell<Option<Credentials>>,
-    busy: Cell<bool>,
+    pub(crate) creds: RefCell<Option<Credentials>>,
+    pub(crate) busy: Cell<bool>,
     /// Set while the UI is updated from router data, so switch handlers don't fire writes.
     syncing: Cell<bool>,
 }
@@ -72,7 +75,8 @@ pub fn build(application: &adw::Application) {
     let page = adw::PreferencesPage::new();
 
     let status_group = adw::PreferencesGroup::new();
-    let internet_row = adw::ActionRow::builder().title("Internet").build();
+    let internet_row = adw::ActionRow::builder().title("Internet").activatable(true).build();
+    internet_row.add_suffix(&gtk::Image::from_icon_name("go-next-symbolic"));
     internet_row.add_prefix(&gtk::Image::from_icon_name("network-transmit-receive-symbolic"));
     status_group.add(&internet_row);
     page.add(&status_group);
@@ -99,6 +103,8 @@ pub fn build(application: &adw::Application) {
     let login_host = adw::EntryRow::builder().title("Endereço do Deco").build();
     login_host.set_text(credentials::default_host());
     let login_pass = adw::PasswordEntryRow::builder().title("Senha do administrador").build();
+    let login_email = adw::EntryRow::builder().title("E-mail do TP-Link ID (opcional)").build();
+    login_email.set_tooltip_text(Some("Necessário para configurações avançadas, como DNS"));
     let login_btn = gtk::Button::builder()
         .label("Conectar")
         .halign(gtk::Align::Center)
@@ -108,6 +114,7 @@ pub fn build(application: &adw::Application) {
     let login_group = adw::PreferencesGroup::new();
     login_group.add(&login_host);
     login_group.add(&login_pass);
+    login_group.add(&login_email);
     let login_box = gtk::Box::new(gtk::Orientation::Vertical, 0);
     login_box.append(&login_group);
     login_box.append(&login_btn);
@@ -129,10 +136,13 @@ pub fn build(application: &adw::Application) {
     let view = adw::ToolbarView::new();
     view.add_top_bar(&header);
     view.set_content(Some(&stack));
-    toasts.set_child(Some(&view));
+    let nav = adw::NavigationView::new();
+    nav.add(&adw::NavigationPage::builder().title("Deco").tag("home").child(&view).build());
+    toasts.set_child(Some(&nav));
 
     let app = Rc::new(App {
         window: window.clone(),
+        nav,
         toasts,
         stack,
         spinner,
@@ -143,6 +153,7 @@ pub fn build(application: &adw::Application) {
         guest_switch,
         login_host,
         login_pass,
+        login_email,
         dynamic_rows: RefCell::default(),
         creds: RefCell::new(credentials::load()),
         busy: Cell::new(false),
@@ -150,6 +161,7 @@ pub fn build(application: &adw::Application) {
     });
 
     refresh_btn.connect_clicked(glib::clone!(#[strong] app, move |_| refresh(&app)));
+    app.internet_row.connect_activated(glib::clone!(#[strong] app, move |_| internet::open(&app)));
     login_btn.connect_clicked(glib::clone!(#[strong] app, move |_| submit_login(&app)));
     app.login_pass.connect_entry_activated(glib::clone!(#[strong] app, move |_| submit_login(&app)));
     app.main_switch.connect_active_notify(glib::clone!(#[strong] app, move |row| {
@@ -179,6 +191,10 @@ pub fn build(application: &adw::Application) {
 
     if app.creds.borrow().is_some() {
         refresh(&app);
+        // Dev aid for screenshots: open a subpage directly.
+        if std::env::var("DECO_OPEN").as_deref() == Ok("internet") {
+            internet::open(&app);
+        }
     } else {
         app.stack.set_visible_child_name("login");
     }
@@ -186,7 +202,7 @@ pub fn build(application: &adw::Application) {
 }
 
 /// Runs `job` with the current credentials on a worker thread, then `done` on the UI thread.
-fn run<T: Send + 'static>(
+pub(crate) fn run<T: Send + 'static>(
     app: &Rc<App>,
     job: impl FnOnce(&Credentials) -> deco_api::Result<T> + Send + 'static,
     done: impl FnOnce(&Rc<App>, deco_api::Result<T>) + 'static,
@@ -207,7 +223,7 @@ fn run<T: Send + 'static>(
     });
 }
 
-fn toast(app: &App, msg: &str) {
+pub(crate) fn toast(app: &App, msg: &str) {
     app.toasts.add_toast(adw::Toast::new(msg));
 }
 
@@ -234,6 +250,7 @@ fn submit_login(app: &Rc<App>) {
     let creds = Credentials {
         host: app.login_host.text().trim().to_owned(),
         password: app.login_pass.text().to_string(),
+        email: Some(app.login_email.text().trim().to_owned()).filter(|e| !e.is_empty()),
     };
     if creds.host.is_empty() || creds.password.is_empty() {
         return;

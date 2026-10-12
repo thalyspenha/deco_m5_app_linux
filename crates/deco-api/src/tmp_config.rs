@@ -12,7 +12,11 @@ use crate::Result;
 pub struct WanConfig {
     pub dial_type: String,
     pub ip: String,
+    pub mask: String,
     pub gateway: String,
+    pub mac: String,
+    /// PPPoE username (empty for other connection types).
+    pub username: String,
     pub auto_dns: bool,
     pub dns1: String,
     pub dns2: String,
@@ -60,7 +64,10 @@ impl TmpSession {
         Ok(WanConfig {
             dial_type: s(w, "dial_type"),
             ip: s(&w["ip_info"], "ip"),
+            mask: s(&w["ip_info"], "mask"),
             gateway: s(&w["ip_info"], "gateway"),
+            mac: s(&w["ip_info"], "mac"),
+            username: decode_name(&s(&w["user_info"], "username")),
             auto_dns: w["enable_auto_dns"].as_bool().unwrap_or(true),
             dns1: s(&w["ip_info"], "dns1"),
             dns2: s(&w["ip_info"], "dns2"),

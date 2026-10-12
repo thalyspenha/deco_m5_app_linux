@@ -8,6 +8,8 @@ const DEFAULT_HOST: &str = "192.168.68.1";
 pub struct Credentials {
     pub host: String,
     pub password: String,
+    /// TP-Link ID email, needed for TMP (advanced settings). Optional.
+    pub email: Option<String>,
 }
 
 fn entry(key: &str) -> Option<keyring::Entry> {
@@ -17,11 +19,13 @@ fn entry(key: &str) -> Option<keyring::Entry> {
 pub fn load() -> Option<Credentials> {
     if let Ok(password) = std::env::var("DECO_PASSWORD") {
         let host = std::env::var("DECO_HOST").unwrap_or_else(|_| DEFAULT_HOST.into());
-        return Some(Credentials { host, password });
+        let email = std::env::var("DECO_USERNAME").ok().filter(|e| !e.is_empty());
+        return Some(Credentials { host, password, email });
     }
     let host = entry("host")?.get_password().ok()?;
     let password = entry("password")?.get_password().ok()?;
-    Some(Credentials { host, password })
+    let email = entry("email").and_then(|e| e.get_password().ok());
+    Some(Credentials { host, password, email })
 }
 
 pub fn save(c: &Credentials) {
@@ -31,10 +35,16 @@ pub fn save(c: &Credentials) {
     if let Some(e) = entry("password") {
         let _ = e.set_password(&c.password);
     }
+    if let Some(e) = entry("email") {
+        let _ = match &c.email {
+            Some(email) => e.set_password(email),
+            None => e.delete_credential(),
+        };
+    }
 }
 
 pub fn clear() {
-    for key in ["host", "password"] {
+    for key in ["host", "password", "email"] {
         if let Some(e) = entry(key) {
             let _ = e.delete_credential();
         }

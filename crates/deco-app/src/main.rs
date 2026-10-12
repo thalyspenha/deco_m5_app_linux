@@ -1,4 +1,5 @@
 mod credentials;
+mod internet;
 mod window;
 
 use adw::prelude::*;
