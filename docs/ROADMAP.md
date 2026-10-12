@@ -19,13 +19,14 @@
 2. [ ] **Testar `wifi` on/off** na rede real (mexe na rede, precisa confirmação).
 3. [ ] **Configuração via TMP** (opcodes em `docs/PROTOCOL.md`)
    - [x] Primeiro SET de baixo risco: criar/remover reserva de IP (envelope `params` + `config_version`)
-   - [x] API tipada (`tmp_config.rs`); validar SETs de port forwarding e bloqueio
+   - [x] API tipada (`tmp_config.rs`); bloqueio validado, port forwarding pendente
    - [x] Tela "Conexão de internet" (tipo, IPv4, DNS editável, MTU); salvar DNS validado na rede real
    - [x] Detalhe do cliente: IP, MAC, rede, Deco conectado, reservar IP, bloquear
    - [x] Página de dispositivos bloqueados com desbloquear
    - [ ] Port forwarding na GUI (validar SET antes)
-   - [ ] DNS/WAN e LAN/DHCP (risco de cortar rede; testar com cuidado)
-   - [ ] `DECO_USERNAME` (e-mail TP-Link ID) no login da GUI/keyring
+   - [x] DNS da WAN (validado)
+   - [ ] LAN/DHCP (`set_dhcp` não validado; risco de renumerar clientes)
+   - [x] `DECO_USERNAME` (e-mail TP-Link ID) no login da GUI/keyring
 
 ## Pendências conhecidas
 
