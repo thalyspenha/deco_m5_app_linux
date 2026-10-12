@@ -69,11 +69,15 @@ Implementado em `crates/deco-api/src/tmp.rs` (`TmpSession`), validado com GETs e
   crc32(corpo) u32, tamanho total u32, offset u32]` + corpo. Tipos: 2 push, 3 push_ack, 4 pull, 5 pull_ack.
   Fragmentos de 8156 bytes. Respostas pequenas chegam direto como pull_ack.
 - **Token**: opcode 1 (alloc, corpo vazio) logo após associar; opcode 3 (free) ao fechar.
-- **JSON**: GETs vão sem corpo; resposta `{"error_code":0,"result":{...}}`. SETs (não testados) mandam os
-  params do bean, às vezes envelopados em `{"params":..., "config_version": <ms>}`.
+- **JSON**: GETs vão sem corpo; resposta `{"error_code":0,"result":{...}}`. SETs **exigem** o envelope
+  `{"params": {...}, "config_version": <epoch ms>}`; sem ele o Deco responde `error_code: 1`.
 
 GETs validados: `0x4004` WAN (DNS, MTU, PPPoE), `0x4211` LAN, `0x4213` DHCP (faixa, DNS),
 `0x40C0` reservas, `0x40B0` port forwarding, `0x4018` bloqueados.
+
+SETs validados (2026-10-12, `examples/tmp_reservation_test.rs`): `0x40C1` add reserva
+`{"reservation_list":[{"ip","mac"}]}` e `0x40C3` remove `{"reservation_list":["<MAC>"]}`
+(MAC no formato `AA-BB-CC-DD-EE-FF`, como vem da lista de clientes).
 
 ## Nuvem TP-Link
 
