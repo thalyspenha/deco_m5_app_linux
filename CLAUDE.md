@@ -6,7 +6,9 @@ App Linux (GTK4 + libadwaita, Rust) para controlar rede mesh TP-Link Deco M5 via
 - No Mac, cargo vem do rustup do brew: `export PATH=/opt/homebrew/opt/rustup/bin:$PATH`.
 - `Session` (deco-api) faz logout no drop. Sempre sessão curta: o Deco aceita só um admin logado e derruba o app oficial.
 - Chamadas de rede rodam em `gio::spawn_blocking` via `run()` em `window.rs`; nunca bloquear a thread da UI.
-- Credenciais: `.env` (dev, gitignored) ou keyring. Nunca commitar senha.
+- Credenciais: `.env` (dev, gitignored) ou keyring. Nunca commitar senha. `.env`: `DECO_HOST`, `DECO_PASSWORD`, `DECO_USERNAME` (e-mail TP-Link ID, usado no TMP).
+- Duas APIs: HTTP LuCI (`Session`, leitura + Wi-Fi/reboot) e TMP (`tmp::TmpSession`, SSH 20001, configuração). Ver `docs/PROTOCOL.md`. `tmp_probe` só aceita opcodes GET.
+- APK decompilado (jadx) fica no scratchpad, não no repo; regenerar do `.apkm` em ~/Downloads se preciso.
 - Docs: `docs/ROADMAP.md` (a fazer), `docs/DECISIONS.md` (stack), `docs/PROTOCOL.md` (protocolo).
 - Alvo final: Omarchy Linux (Hyprland). Desenvolvimento no macOS.
 - Não executar escrita (wifi, reboot) contra a rede real sem confirmação do usuário. `probe` é somente leitura.

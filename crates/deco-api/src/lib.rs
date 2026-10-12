@@ -6,6 +6,7 @@
 
 mod crypto;
 mod models;
+pub mod tmp;
 
 use std::time::Duration;
 
@@ -28,6 +29,12 @@ pub enum Error {
     Router { code: i64, path: String },
     #[error("invalid JSON: {0}")]
     Json(#[from] serde_json::Error),
+    #[error("I/O error: {0}")]
+    Io(#[from] std::io::Error),
+    #[error("SSH error: {0}")]
+    Ssh(#[from] ssh2::Error),
+    #[error("TMP error status {0}")]
+    Tmp(u8),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
