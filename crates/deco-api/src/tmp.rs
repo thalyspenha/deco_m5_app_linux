@@ -45,6 +45,14 @@ pub mod op {
     pub const IP_RESERVATION_LIST_GET: u16 = 0x40C0;
     pub const PORT_FORWARDING_LIST_GET: u16 = 0x40B0;
     pub const BLOCKED_LIST_GET: u16 = 0x4018;
+    pub const IPV4_SET: u16 = 0x4005;
+    pub const DHCP_SET: u16 = 0x4214;
+    pub const IP_RESERVATION_LIST_ADD: u16 = 0x40C1;
+    pub const IP_RESERVATION_LIST_REMOVE: u16 = 0x40C3;
+    pub const PORT_FORWARDING_ADD: u16 = 0x40B1;
+    pub const PORT_FORWARDING_DELETE: u16 = 0x40B3;
+    pub const CLIENT_LIST_BLOCK: u16 = 0x4017;
+    pub const BLOCKED_LIST_UNBLOCK: u16 = 0x4019;
 }
 
 pub struct TmpSession {
@@ -98,6 +106,21 @@ impl TmpSession {
             Some(0) | None => Ok(v),
             Some(code) => Err(Error::Router { code, path: format!("tmp:{opcode:#06x}") }),
         }
+    }
+
+    /// Sends a SET opcode. Writes need the `params` + `config_version`
+    /// envelope; without it the Deco answers `error_code: 1`.
+    pub fn set(&mut self, opcode: u16, params: Value) -> Result<Value> {
+        let ms = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_millis() as u64)
+            .unwrap_or_default();
+        self.call(opcode, Some(&serde_json::json!({"params": params, "config_version": ms})))
+    }
+
+    /// GET returning the `result` block.
+    pub fn get(&mut self, opcode: u16) -> Result<Value> {
+        Ok(self.call(opcode, None)?["result"].take())
     }
 
     pub fn close(mut self) -> Result<()> {

@@ -1,7 +1,7 @@
 //! Read-only TMP smoke test. Needs DECO_USERNAME (TP-Link ID email) and
 //! DECO_PASSWORD in .env.
 //!
-//!     cargo run -p deco-api --example tmp_probe [get-opcode-hex]
+//!     cargo run -p deco-api --example tmp_probe [get-opcode-hex | typed]
 
 use deco_api::tmp::{op, TmpSession};
 
@@ -11,6 +11,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let user = std::env::var("DECO_USERNAME")?;
     let pass = std::env::var("DECO_PASSWORD")?;
     let mut s = TmpSession::connect(&host, &user, &pass)?;
+
+    if std::env::args().nth(1).as_deref() == Some("typed") {
+        println!("{:?}", s.wan()?);
+        println!("{:?}", s.dhcp()?);
+        println!("{:?}", s.reservations()?);
+        println!("{:?}", s.port_forwards()?);
+        println!("{:?}", s.blocked_clients()?);
+        return Ok(s.close()?);
+    }
 
     // Only *_GET opcodes: this example must never change the network.
     let gets = [

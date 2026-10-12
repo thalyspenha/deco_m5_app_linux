@@ -18,6 +18,7 @@
 2. [ ] **Testar `wifi` on/off** na rede real (mexe na rede, precisa confirmação).
 3. [ ] **Configuração via TMP** (opcodes em `docs/PROTOCOL.md`)
    - [x] Primeiro SET de baixo risco: criar/remover reserva de IP (envelope `params` + `config_version`)
+   - [x] API tipada (`tmp_config.rs`); validar SETs de port forwarding e bloqueio
    - [ ] Reserva de IP, port forwarding, bloquear cliente na GUI
    - [ ] DNS/WAN e LAN/DHCP (risco de cortar rede; testar com cuidado)
    - [ ] `DECO_USERNAME` (e-mail TP-Link ID) no login da GUI/keyring

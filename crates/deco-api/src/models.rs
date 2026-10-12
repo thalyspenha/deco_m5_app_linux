@@ -158,16 +158,16 @@ impl Session {
     }
 }
 
-fn list<'a>(data: &'a Value, key: &str) -> impl Iterator<Item = &'a Value> {
+pub(crate) fn list<'a>(data: &'a Value, key: &str) -> impl Iterator<Item = &'a Value> {
     data[key].as_array().into_iter().flatten()
 }
 
-fn s(v: &Value, key: &str) -> String {
+pub(crate) fn s(v: &Value, key: &str) -> String {
     v[key].as_str().unwrap_or_default().to_owned()
 }
 
 /// Client names come base64-encoded; fall back to the raw value.
-fn decode_name(raw: &str) -> String {
+pub(crate) fn decode_name(raw: &str) -> String {
     B64.decode(raw)
         .ok()
         .and_then(|b| String::from_utf8(b).ok())

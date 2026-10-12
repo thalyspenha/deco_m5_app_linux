@@ -7,6 +7,7 @@
 mod crypto;
 mod models;
 pub mod tmp;
+mod tmp_config;
 
 use std::time::Duration;
 
@@ -16,6 +17,7 @@ use serde_json::{json, Value};
 
 use crypto::{AesSession, RsaKey};
 pub use models::*;
+pub use tmp_config::{BlockedClient, DhcpConfig, PortForward, Reservation, WanConfig};
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {

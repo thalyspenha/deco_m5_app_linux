@@ -4,12 +4,9 @@
 //!
 //!     cargo run -p deco-api --example tmp_reservation_test [client-name]
 
-use deco_api::tmp::{op, TmpSession};
+use deco_api::tmp::TmpSession;
 use deco_api::Session;
-use serde_json::json;
 
-const IP_RESERVATION_LIST_ADD: u16 = 0x40C1;
-const IP_RESERVATION_LIST_REMOVE: u16 = 0x40C3;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenvy::dotenv().ok();
@@ -27,20 +24,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("client {} ip={} mac={}", client.name, client.ip, client.mac);
 
     let mut s = TmpSession::connect(&host, &user, &pass)?;
-    let list = |s: &mut TmpSession| s.call(op::IP_RESERVATION_LIST_GET, None).map(|v| v["result"]["reservation_list"].clone());
-
-    println!("before: {}", list(&mut s)?);
-    let wrap = |params: serde_json::Value| json!({"params": params, "config_version": now_ms()});
-    let add = wrap(json!({"reservation_list": [{"ip": client.ip, "mac": client.mac}]}));
-    println!("add: {:?}", s.call(IP_RESERVATION_LIST_ADD, Some(&add)));
-    println!("after add: {}", list(&mut s)?);
-
-    let remove = wrap(json!({"reservation_list": [client.mac]}));
-    println!("remove: {:?}", s.call(IP_RESERVATION_LIST_REMOVE, Some(&remove)));
-    println!("after remove: {}", list(&mut s)?);
+    println!("before: {:?}", s.reservations()?);
+    s.add_reservation(&client.ip, &client.mac)?;
+    println!("after add: {:?}", s.reservations()?);
+    s.remove_reservation(&client.mac)?;
+    println!("after remove: {:?}", s.reservations()?);
     Ok(s.close()?)
 }
 
-fn now_ms() -> u64 {
-    std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis() as u64
-}

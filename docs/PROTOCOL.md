@@ -79,6 +79,11 @@ SETs validados (2026-10-12, `examples/tmp_reservation_test.rs`): `0x40C1` add re
 `{"reservation_list":[{"ip","mac"}]}` e `0x40C3` remove `{"reservation_list":["<MAC>"]}`
 (MAC no formato `AA-BB-CC-DD-EE-FF`, como vem da lista de clientes).
 
+API tipada em `crates/deco-api/src/tmp_config.rs`: `wan`, `dhcp`, `reservations`, `port_forwards`,
+`blocked_clients` (leitura validada) e `add/remove_reservation` (validado). **Não validados**:
+`add/delete_port_forward`, `block/unblock_client` (nome em base64), `set_dhcp`, `set_wan_dns`
+(reescreve o objeto `wan` inteiro lido do Deco, mudando só DNS, para não perder credenciais PPPoE).
+
 ## Nuvem TP-Link
 
 - Usada pelo app para acesso remoto (TP-Link ID). Fora do escopo.
