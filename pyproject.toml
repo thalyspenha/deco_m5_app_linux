@@ -1,0 +1,18 @@
+[project]
+name = "deco-linux"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "python-dotenv>=1.2.4",
+    "rich>=15.0.0",
+    "tplinkrouterc6u>=5.36.0",
+]
+
+[project.scripts]
+deco = "deco_linux.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
