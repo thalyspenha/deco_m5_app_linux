@@ -290,7 +290,7 @@ fn show(app: &App, snap: &Snapshot) {
             .title(&node.name)
             .subtitle(format!("{role} · {} · Deco {} v{}", node.ip, node.model, node.hardware))
             .build();
-        row.add_prefix(&gtk::Image::from_icon_name("network-wireless-hotspot-symbolic"));
+        row.add_prefix(&gtk::Image::from_icon_name("network-workgroup-symbolic"));
         let state = gtk::Label::new(Some(if node.online { "Online" } else { "Offline" }));
         state.add_css_class(if node.online { "success" } else { "error" });
         row.add_suffix(&state);
@@ -331,7 +331,11 @@ fn client_subtitle(c: &Client) -> String {
         Network::Wired => "Cabo · ",
         Network::Unknown => "",
     };
-    let band = if c.band.is_empty() { String::new() } else { format!(" · {}", c.band) };
+    let band = match (c.band.is_empty(), c.network) {
+        (false, _) => format!(" · {}", c.band),
+        (true, Network::Wired) => String::new(),
+        (true, _) => " · Wi-Fi".to_string(),
+    };
     format!("{net}{}{band}", c.ip)
 }
 

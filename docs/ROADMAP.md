@@ -9,7 +9,8 @@
 ## A fazer
 
 1. [ ] **Interface gráfica** (em andamento)
-   - [ ] Validar visual no Mac e no Omarchy (screenshot via screencapture no Mac; no Omarchy pelo usuário)
+   - [x] Validar visual no Mac
+   - [ ] Validar visual no Omarchy (pelo usuário)
    - [ ] Detalhe do cliente: renomear, bloquear, ver qual Deco está conectado
    - [ ] Detalhe do Deco: sinal, clientes por nó, reiniciar só um
    - [ ] Ícone e `.desktop`, pacote AUR
@@ -18,5 +19,5 @@
 
 ## Pendências conhecidas
 
-- Clientes Daikin vêm sem `connection_type` (banda vazia).
+- Clientes Daikin vêm sem `connection_type` (banda vazia); GUI mostra "Wi-Fi".
 - Aviso `g_settings_schema_source_lookup` no macOS (schemas GSettings do brew), inofensivo.
