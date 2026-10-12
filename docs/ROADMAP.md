@@ -19,7 +19,7 @@
 3. [ ] **Configuração via TMP** (opcodes em `docs/PROTOCOL.md`)
    - [x] Primeiro SET de baixo risco: criar/remover reserva de IP (envelope `params` + `config_version`)
    - [x] API tipada (`tmp_config.rs`); validar SETs de port forwarding e bloqueio
-   - [x] Tela "Conexão de internet" (tipo, IPv4, DNS editável, MTU); salvar DNS ainda não testado na rede real
+   - [x] Tela "Conexão de internet" (tipo, IPv4, DNS editável, MTU); salvar DNS validado na rede real
    - [ ] Reserva de IP, port forwarding, bloquear cliente na GUI
    - [ ] DNS/WAN e LAN/DHCP (risco de cortar rede; testar com cuidado)
    - [ ] `DECO_USERNAME` (e-mail TP-Link ID) no login da GUI/keyring

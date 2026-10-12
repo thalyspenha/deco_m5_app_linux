@@ -266,6 +266,8 @@ fn confirm_save(app: &Rc<App>, page: &Rc<Page>) {
             move |c| {
                 let mut s = connect(c)?;
                 s.set_wan_dns(auto, &d1, &d2)?;
+                // The Deco applies WAN changes asynchronously (~5 s).
+                std::thread::sleep(std::time::Duration::from_secs(6));
                 let wan = s.wan()?;
                 s.close()?;
                 Ok(wan)

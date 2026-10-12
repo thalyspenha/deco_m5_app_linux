@@ -81,8 +81,13 @@ SETs validados (2026-10-12, `examples/tmp_reservation_test.rs`): `0x40C1` add re
 
 API tipada em `crates/deco-api/src/tmp_config.rs`: `wan`, `dhcp`, `reservations`, `port_forwards`,
 `blocked_clients` (leitura validada) e `add/remove_reservation` (validado). **Não validados**:
-`add/delete_port_forward`, `block/unblock_client` (nome em base64), `set_dhcp`, `set_wan_dns`
-(reescreve o objeto `wan` inteiro lido do Deco, mudando só DNS, para não perder credenciais PPPoE).
+`add/delete_port_forward`, `block/unblock_client` (nome em base64), `set_dhcp`.
+
+`set_wan_dns` **validado** (2026-10-12, `examples/tmp_dns_test.rs`, PPPoE): payload mínimo como o app,
+`{"wan":{"dial_type","support_mtu_size","enable_auto_dns","mtu_size","ip_info":{"dns1","dns2"}}}`, sem
+`user_info`. Mandar o objeto `wan` inteiro (com `user_info.username` sem senha) retorna `error_code 0`
+mas é ignorado. A mudança aplica de forma assíncrona (~5 s, sem redial PPPoE); ler logo após o SET
+ainda mostra o valor antigo. Usuário PPPoE vem em base64.
 
 ## Nuvem TP-Link
 

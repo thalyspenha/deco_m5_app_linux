@@ -159,15 +159,23 @@ impl TmpSession {
         Ok(())
     }
 
-    /// Not validated yet, and risky: a bad payload can drop the internet
-    /// connection. Rewrites the full WAN object read from the Deco, changing
-    /// only the DNS fields, so PPPoE credentials stay untouched.
+    /// Mirrors the official app's IPv4 save: a minimal `wan` object with the
+    /// connection type, MTU and DNS only. `user_info` is left out so PPPoE
+    /// credentials stay untouched (sending the username without the password
+    /// makes the Deco silently ignore the change).
     pub fn set_wan_dns(&mut self, auto: bool, dns1: &str, dns2: &str) -> Result<()> {
-        let mut wan: Value = self.get(op::IPV4_GET)?["wan"].take();
-        wan["enable_auto_dns"] = json!(auto);
+        let cur: Value = self.get(op::IPV4_GET)?["wan"].take();
+        let mut wan = json!({
+            "dial_type": cur["dial_type"],
+            "support_mtu_size": cur["support_mtu_size"],
+            "enable_auto_dns": auto,
+            "mtu_size": cur["mtu_size"],
+        });
         if !auto {
-            wan["ip_info"]["dns1"] = json!(dns1);
-            wan["ip_info"]["dns2"] = json!(dns2);
+            wan["ip_info"] = json!({"dns1": dns1, "dns2": dns2});
+        }
+        if cur["service_info"].is_object() {
+            wan["service_info"] = cur["service_info"].clone();
         }
         self.set(op::IPV4_SET, json!({"wan": wan}))?;
         Ok(())
