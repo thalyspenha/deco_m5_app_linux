@@ -9,7 +9,7 @@
 ## A fazer
 
 1. [ ] **Interface gráfica** (em andamento)
-   - [ ] Validar visual no Mac e no Omarchy (screenshot pelo usuário)
+   - [ ] Validar visual no Mac e no Omarchy (screenshot via screencapture no Mac; no Omarchy pelo usuário)
    - [ ] Detalhe do cliente: renomear, bloquear, ver qual Deco está conectado
    - [ ] Detalhe do Deco: sinal, clientes por nó, reiniciar só um
    - [ ] Ícone e `.desktop`, pacote AUR

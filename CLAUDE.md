@@ -10,5 +10,5 @@ App Linux (GTK4 + libadwaita, Rust) para controlar rede mesh TP-Link Deco M5 via
 - Docs: `docs/ROADMAP.md` (a fazer), `docs/DECISIONS.md` (stack), `docs/PROTOCOL.md` (protocolo).
 - Alvo final: Omarchy Linux (Hyprland). Desenvolvimento no macOS.
 - Não executar escrita (wifi, reboot) contra a rede real sem confirmação do usuário. `probe` é somente leitura.
-- Terminal sem permissão de gravação de tela no Mac: screenshots da GUI precisam ser feitos pelo usuário.
+- Screenshot da GUI no Mac (Ghostty com permissão de gravação de tela): rodar `./target/debug/deco-app &`, pegar bounds da janela via `CGWindowListCopyWindowInfo` (swift -e) e `screencapture -x -R x,y,w,h` no scratchpad. Se vier só wallpaper, permissão não está ativa.
 - Git: identidade pessoal (36860610+thalyspenha@users.noreply.github.com), remote via host SSH `github.com-personal`.
