@@ -4,17 +4,11 @@
 use std::rc::Rc;
 
 use adw::prelude::*;
-use deco_api::tmp::TmpSession;
 use deco_api::{Client, Session};
 use gtk::glib;
 
-use crate::credentials::Credentials;
 use crate::window::{detail_header, client_icon, connection_label, refresh, run, speed, toast, App};
 
-fn tmp(c: &Credentials) -> deco_api::Result<TmpSession> {
-    let email = c.email.as_deref().ok_or(deco_api::Error::Protocol("e-mail do TP-Link ID não informado"))?;
-    TmpSession::connect(&c.host, email, &c.password)
-}
 
 /// Data loaded when the page opens.
 struct Details {
@@ -120,7 +114,7 @@ fn load(app: &Rc<App>, page: &Rc<Page>) {
             s.logout()?;
             let reserved = match c.email {
                 Some(_) => {
-                    let mut t = tmp(c)?;
+                    let mut t = c.tmp()?;
                     let r = t.reservations()?.iter().any(|r| r.mac == mac);
                     t.close()?;
                     Some(r)
@@ -159,7 +153,7 @@ fn set_reservation(app: &Rc<App>, page: &Rc<Page>, reserve: bool) {
     run(
         app,
         move |c| {
-            let mut t = tmp(c)?;
+            let mut t = c.tmp()?;
             if reserve {
                 t.add_reservation(&ip, &mac)?;
             } else {
@@ -198,7 +192,7 @@ fn confirm_block(app: &Rc<App>, page: &Rc<Page>) {
         run(
             &app,
             move |c| {
-                let mut t = tmp(c)?;
+                let mut t = c.tmp()?;
                 t.block_client(&mac, &name)?;
                 t.close()
             },

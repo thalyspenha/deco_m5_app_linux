@@ -3,17 +3,11 @@
 use std::rc::Rc;
 
 use adw::prelude::*;
-use deco_api::tmp::TmpSession;
 use deco_api::BlockedClient;
 use gtk::glib;
 
-use crate::credentials::Credentials;
 use crate::window::{refresh, run, toast, App};
 
-fn tmp(c: &Credentials) -> deco_api::Result<TmpSession> {
-    let email = c.email.as_deref().ok_or(deco_api::Error::Protocol("e-mail do TP-Link ID não informado"))?;
-    TmpSession::connect(&c.host, email, &c.password)
-}
 
 struct Page {
     stack: gtk::Stack,
@@ -57,7 +51,7 @@ fn load(app: &Rc<App>, page: &Rc<Page>) {
     run(
         app,
         |c| {
-            let mut t = tmp(c)?;
+            let mut t = c.tmp()?;
             let list = t.blocked_clients()?;
             t.close()?;
             Ok(list)
@@ -102,7 +96,7 @@ fn unblock(app: &Rc<App>, page: &Rc<Page>, mac: &str) {
     run(
         app,
         move |c| {
-            let mut t = tmp(c)?;
+            let mut t = c.tmp()?;
             t.unblock_client(&mac)?;
             let list = t.blocked_clients()?;
             t.close()?;

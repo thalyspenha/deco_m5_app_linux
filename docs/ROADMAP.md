@@ -17,7 +17,10 @@
    - [x] "Reiniciar este Deco" validado na rede real (~2 min fora, só o nó)
    - [x] Ícone e `.desktop` (`data/`), `PKGBUILD` em `packaging/aur/`
    - [ ] Publicar no AUR (`deco-linux-git`; requer repo público no GitHub)
-2. [ ] **Testar `wifi` on/off** na rede real (mexe na rede, precisa confirmação).
+2. [ ] **Wi-Fi on/off** via TMP (`0x4008`; HTTP quebrado no firmware 1.9.5)
+   - [x] Rede de convidados validada na rede real
+   - [ ] Rede principal (derruba clientes Wi-Fi; testar só de máquina no cabo)
+   - [ ] Switches na GUI validados (exigem e-mail do TP-Link ID)
 3. [ ] **Configuração via TMP** (opcodes em `docs/PROTOCOL.md`)
    - [x] Primeiro SET de baixo risco: criar/remover reserva de IP (envelope `params` + `config_version`)
    - [x] API tipada (`tmp_config.rs`); bloqueio validado, port forwarding pendente

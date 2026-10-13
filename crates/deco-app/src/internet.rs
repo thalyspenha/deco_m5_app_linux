@@ -5,17 +5,12 @@ use std::net::Ipv4Addr;
 use std::rc::Rc;
 
 use adw::prelude::*;
-use deco_api::tmp::TmpSession;
 use deco_api::WanConfig;
 use gtk::glib;
 
-use crate::credentials::{self, Credentials};
+use crate::credentials;
 use crate::window::{run, toast, App};
 
-fn connect(c: &Credentials) -> deco_api::Result<TmpSession> {
-    let email = c.email.as_deref().ok_or(deco_api::Error::Protocol("e-mail do TP-Link ID não informado"))?;
-    TmpSession::connect(&c.host, email, &c.password)
-}
 
 struct Page {
     stack: gtk::Stack,
@@ -176,7 +171,7 @@ fn load(app: &Rc<App>, page: &Rc<Page>) {
     run(
         app,
         |c| {
-            let mut s = connect(c)?;
+            let mut s = c.tmp()?;
             let wan = s.wan()?;
             s.close()?;
             Ok(wan)
@@ -264,7 +259,7 @@ fn confirm_save(app: &Rc<App>, page: &Rc<Page>) {
         run(
             &app,
             move |c| {
-                let mut s = connect(c)?;
+                let mut s = c.tmp()?;
                 s.set_wan_dns(auto, &d1, &d2)?;
                 // The Deco applies WAN changes asynchronously (~5 s).
                 std::thread::sleep(std::time::Duration::from_secs(6));

@@ -150,20 +150,6 @@ impl Session {
         })
     }
 
-    /// Enables or disables a Wi-Fi network on both 2.4 and 5 GHz.
-    pub fn set_wifi(&self, network: WifiNetwork, enable: bool) -> Result<()> {
-        let net = match network {
-            WifiNetwork::Main => "host",
-            WifiNetwork::Guest => "guest",
-        };
-        let params = json!({
-            "band2_4": {net: {"enable": enable}},
-            "band5_1": {net: {"enable": enable}},
-        });
-        self.request("admin/wireless?form=wlan", &json!({"operation": "write", "params": params}))?;
-        Ok(())
-    }
-
     /// Reboots a single Deco.
     pub fn reboot_node(&self, mac: &str) -> Result<()> {
         self.request(

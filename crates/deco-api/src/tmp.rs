@@ -45,6 +45,7 @@ pub mod op {
     pub const IP_RESERVATION_LIST_GET: u16 = 0x40C0;
     pub const PORT_FORWARDING_LIST_GET: u16 = 0x40B0;
     pub const BLOCKED_LIST_GET: u16 = 0x4018;
+    pub const WIRELESS_GET: u16 = 0x4009;
     pub const IPV4_SET: u16 = 0x4005;
     pub const DHCP_SET: u16 = 0x4214;
     pub const IP_RESERVATION_LIST_ADD: u16 = 0x40C1;
@@ -53,6 +54,7 @@ pub mod op {
     pub const PORT_FORWARDING_DELETE: u16 = 0x40B3;
     pub const CLIENT_LIST_BLOCK: u16 = 0x4017;
     pub const BLOCKED_LIST_UNBLOCK: u16 = 0x4019;
+    pub const WIRELESS_SET: u16 = 0x4008;
 }
 
 pub struct TmpSession {

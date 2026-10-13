@@ -4,7 +4,7 @@
 use base64::{engine::general_purpose::STANDARD as B64, Engine};
 use serde_json::{json, Value};
 
-use crate::models::{decode_name, list, s};
+use crate::models::{decode_name, list, s, WifiNetwork, WifiState};
 use crate::tmp::{op, TmpSession};
 use crate::Result;
 
@@ -57,7 +57,45 @@ pub struct BlockedClient {
     pub name: String,
 }
 
+const WIFI_BANDS: [&str; 2] = ["band2_4", "band5_1"];
+
+fn wifi_section(net: WifiNetwork) -> &'static str {
+    match net {
+        WifiNetwork::Main => "host",
+        WifiNetwork::Guest => "guest",
+    }
+}
+
 impl TmpSession {
+    pub fn wifi(&mut self) -> Result<WifiState> {
+        let r = self.get(op::WIRELESS_GET)?;
+        let on = |band: &str, net: &str| r[band][net]["enable"].as_bool().unwrap_or(false);
+        Ok(WifiState {
+            main_2g: on("band2_4", "host"),
+            main_5g: on("band5_1", "host"),
+            guest_2g: on("band2_4", "guest"),
+            guest_5g: on("band5_1", "guest"),
+        })
+    }
+
+    /// Enables or disables a Wi-Fi network on both bands. Like the app, it
+    /// sends that network's full object per band (as read) with `enable`
+    /// changed, and nothing else. The HTTP `wlan` write fails on firmware 1.9.5.
+    pub fn set_wifi(&mut self, net: WifiNetwork, enable: bool) -> Result<()> {
+        let current = self.get(op::WIRELESS_GET)?;
+        let section = wifi_section(net);
+        let mut params = json!({});
+        for band in WIFI_BANDS {
+            let mut obj = current[band][section].clone();
+            if obj.is_object() {
+                obj["enable"] = json!(enable);
+                params[band] = json!({ section: obj });
+            }
+        }
+        self.set(op::WIRELESS_SET, params)?;
+        Ok(())
+    }
+
     pub fn wan(&mut self) -> Result<WanConfig> {
         let r = self.get(op::IPV4_GET)?;
         let w = &r["wan"];

@@ -29,6 +29,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         op::IP_RESERVATION_LIST_GET,
         op::PORT_FORWARDING_LIST_GET,
         op::BLOCKED_LIST_GET,
+        op::WIRELESS_GET,
     ];
     let ops: Vec<u16> = match std::env::args().nth(1) {
         Some(a) => {

@@ -458,9 +458,9 @@ fn apply_wifi(app: &Rc<App>, row: adw::SwitchRow, network: WifiNetwork, enable: 
     run(
         app,
         move |c| {
-            let s = Session::login(&c.host, &c.password)?;
+            let mut s = c.tmp()?;
             s.set_wifi(network, enable)?;
-            s.logout()
+            s.close()
         },
         move |app, res| match res {
             Ok(()) => toast(app, &format!("{} {}", row.title(), if enable { "ligada" } else { "desligada" })),

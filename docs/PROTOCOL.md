@@ -55,6 +55,7 @@ credenciais PPPoE, ou é feito via TMP). Próximo passo: payload do app oficial 
 | 0x4036 / 0x4037 | QOS_MODE_GET / SET |
 | 0x40D0 / 0x40D1 | DDNS_GET / SET |
 | 0x424A / 0x424B | UPNP_GET / SET |
+| 0x4009 / 0x4008 | WIRELESS_GET / SET (host, guest, iot por banda) |
 
 Implementado em `crates/deco-api/src/tmp.rs` (`TmpSession`), validado com GETs em 2026-10-12
 (`cargo run -p deco-api --example tmp_probe`, precisa `DECO_USERNAME` = e-mail do TP-Link ID no `.env`).
@@ -110,3 +111,14 @@ ainda mostra o valor antigo. Usuário PPPoE vem em base64.
 
 - Deco M5 v3.2, firmware 1.9.5 Build 20260602.
 - 3 nós: Bedroom (master, 192.168.68.1) → Quarto mãe → Living Room (cadeia).
+
+**Wi-Fi on/off via HTTP não funciona** (firmware 1.9.5, 2026-10-13, `examples/wifi_test.rs`): qualquer `write` em
+`admin/wireless?form=wlan` (duas bandas ou só `band2_4`, rede guest) volta HTTP 500 com o corpo cifrado sem envelope
+`data`; decifrado: `attempt to index global 'mode' (a nil value)` no dispatcher Lua. Nada muda. Próximo passo: opcode TMP
+de Wi-Fi no APK.
+
+**Wi-Fi via TMP validado** (2026-10-13, `examples/wifi_test.rs guest`): `0x4009` WIRELESS_GET devolve, por banda
+(`band2_4`, `band5_1`), `host`, `guest`, `iot`, `radio` e `backhaul`. `0x4008` WIRELESS_SET, como o app
+(`MeshWirelessRepository`): só o objeto da rede alterada, completo como veio do GET, com `enable` trocado, em cada banda:
+`{"band2_4":{"guest":{...}},"band5_1":{"guest":{...}}}`. Rede de convidados ligou e desligou nas duas bandas.
+`Session::set_wifi` (HTTP) foi removido; a GUI usa `TmpSession::set_wifi`.

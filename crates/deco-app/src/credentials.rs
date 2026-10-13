@@ -12,6 +12,14 @@ pub struct Credentials {
     pub email: Option<String>,
 }
 
+impl Credentials {
+    /// Opens a TMP session; needs the TP-Link ID email.
+    pub fn tmp(&self) -> deco_api::Result<deco_api::tmp::TmpSession> {
+        let email = self.email.as_deref().ok_or(deco_api::Error::Protocol("e-mail do TP-Link ID não informado"))?;
+        deco_api::tmp::TmpSession::connect(&self.host, email, &self.password)
+    }
+}
+
 fn entry(key: &str) -> Option<keyring::Entry> {
     keyring::Entry::new(SERVICE, key).ok()
 }
