@@ -1,6 +1,6 @@
 # Maintainer: Thalys Penha <36860610+thalyspenha@users.noreply.github.com>
 pkgname=deco-linux-git
-pkgver=0.1.0.r0.g322336d
+pkgver=0.1.0.r17.ge420b1f
 pkgrel=1
 pkgdesc='GTK4/libadwaita app to manage TP-Link Deco mesh networks'
 arch=('x86_64' 'aarch64')
@@ -8,6 +8,7 @@ url='https://github.com/thalyspenha/deco_m5_app_linux'
 license=('MIT')
 depends=('gtk4' 'libadwaita' 'openssl' 'dbus')
 makedepends=('cargo' 'git')
+options=('!lto')
 provides=('deco-linux')
 conflicts=('deco-linux')
 source=("$pkgname::git+$url.git")

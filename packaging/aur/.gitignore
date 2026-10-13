@@ -1,0 +1,4 @@
+src/
+pkg/
+deco-linux-git/
+*.pkg.tar.zst
