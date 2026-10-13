@@ -7,7 +7,7 @@ Antes de começar: ler `docs/ROADMAP.md` (feito/a fazer) e `docs/PROTOCOL.md` (p
 ## Código
 
 - Workspace Cargo: `crates/deco-api` (cliente/protocolo) e `crates/deco-app` (GUI).
-- Duas APIs: HTTP LuCI (`Session`, leitura + Wi-Fi/reboot) e TMP (`tmp::TmpSession` + `tmp_config.rs`, SSH 20001, configuração). `tmp_probe` só aceita opcodes GET.
+- Duas APIs: HTTP LuCI (`Session`, leitura + reboot; escrita de Wi-Fi quebrada no firmware 1.9.5) e TMP (`tmp::TmpSession` + `tmp_config.rs`, SSH 20001, configuração e Wi-Fi on/off; conectar via `Credentials::tmp()` na GUI). `tmp_probe` só aceita opcodes GET.
 - `Session` faz logout e `TmpSession` libera token/fecha no drop. Sempre sessão curta: o Deco aceita só um admin logado e derruba o app oficial.
 - Chamadas de rede rodam em `gio::spawn_blocking` via `run()` em `window.rs`; nunca bloquear a thread da UI. `run()` descarta o job se outro estiver em andamento (`app.busy`): páginas fazem retry no load e avisam no save.
 - Páginas: `internet.rs`, `client.rs`, `deco.rs`, `blocked.rs`, empilhadas no `adw::NavigationView` (`app.nav`). Cabeçalho de detalhe: `detail_header()` (não usar `adw::StatusPage` dentro de `PreferencesPage`, é cortado).
@@ -47,7 +47,7 @@ Antes de começar: ler `docs/ROADMAP.md` (feito/a fazer) e `docs/PROTOCOL.md` (p
 
 ## Engenharia reversa
 
-- APK do app Deco (`com.tplink.tpm5`, APKMirror, bundle `.apkm`): `unzip` e `jadx --no-res -d <dir> base.apk` numa pasta temporária fora do repo. Opcodes em `com.tplink.libtpnetwork.mesh.global.p`, beans em `com.tplink.tpm5.component.more.*/repository/bo`.
+- APK do app Deco (`com.tplink.tpm5`, APKMirror, bundle `.apkm`): `unzip` (o `.apkm` é um zip com `base.apk`) e `jadx --no-res -d <dir> base.apk` numa pasta temporária fora do repo. Wi-Fi em `component/more/wireless/repository`. Opcodes em `com.tplink.libtpnetwork.mesh.global.p`, beans em `com.tplink.tpm5.component.more.*/repository/bo`.
 
 ## Git
 

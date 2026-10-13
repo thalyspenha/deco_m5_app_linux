@@ -10,7 +10,7 @@ Fala direto com os Decos, sem nuvem: a API HTTP local (a mesma da interface web)
 - Status da internet (IP WAN, tipo de conexão)
 - Topologia mesh: cada Deco, a quem está ligado, online/offline
 - Clientes conectados com rede, banda e velocidade, atualizando a cada 15 s com a janela em foco
-- Liga/desliga Wi-Fi principal e de convidados
+- Liga/desliga Wi-Fi principal e de convidados (via TMP, precisa do e-mail do TP-Link ID)
 - Reiniciar toda a rede
 
 **Conexão de internet**
@@ -97,9 +97,9 @@ cargo run -p deco-api --example reboot_node_test "<deco satélite>"
 ## Estrutura
 
 - `crates/deco-api` — cliente dos Decos
-  - `lib.rs`, `models.rs`: API HTTP local (login RSA + AES, nós, clientes, Wi-Fi, reboot)
+  - `lib.rs`, `models.rs`: API HTTP local (login RSA + AES, nós, clientes, leitura do Wi-Fi, reboot)
   - `tmp.rs`: TMP (SSH na porta 20001, framing TMP, camada de app v2)
-  - `tmp_config.rs`: configurações tipadas sobre o TMP (WAN/DNS, DHCP, reservas, port forwarding, bloqueio)
+  - `tmp_config.rs`: configurações tipadas sobre o TMP (WAN/DNS, DHCP, reservas, port forwarding, bloqueio, Wi-Fi on/off)
 - `crates/deco-app` — app GTK4/libadwaita: janela principal e páginas de internet, cliente, Deco e bloqueados
 
 ## Docs
