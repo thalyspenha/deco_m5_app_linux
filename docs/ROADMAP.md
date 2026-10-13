@@ -11,11 +11,12 @@
 
 1. [ ] **Interface gráfica** (em andamento)
    - [x] Validar visual no Mac
-   - [ ] Validar visual no Omarchy (pelo usuário)
+   - [x] Validar visual no Omarchy (2026-10-13, PC no cabo aparece como "Cabo")
    - [ ] Renomear cliente (descobrir opcode)
    - [x] Detalhe do Deco: papel, Deco anterior, sinal do backhaul, modelo/IP/MAC/firmware, clientes do nó
    - [x] "Reiniciar este Deco" validado na rede real (~2 min fora, só o nó)
-   - [ ] Ícone e `.desktop`, pacote AUR
+   - [x] Ícone e `.desktop` (`data/`), `PKGBUILD` em `packaging/aur/`
+   - [ ] Publicar no AUR (`deco-linux-git`; requer repo público no GitHub)
 2. [ ] **Testar `wifi` on/off** na rede real (mexe na rede, precisa confirmação).
 3. [ ] **Configuração via TMP** (opcodes em `docs/PROTOCOL.md`)
    - [x] Primeiro SET de baixo risco: criar/remover reserva de IP (envelope `params` + `config_version`)

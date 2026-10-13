@@ -47,6 +47,16 @@ Com outro modelo Deco, os testes somente leitura abaixo mostram rápido o que fu
 
 O Deco aceita **uma sessão de administrador por vez**: cada atualização do app derruba momentaneamente a sessão do app oficial, e vice-versa. Por isso o app faz login e logout a cada operação e só atualiza com a janela em foco.
 
+## Instalar (Arch / Omarchy)
+
+O `PKGBUILD` em `packaging/aur/` compila do Git e instala o binário, o `.desktop` e o ícone:
+
+```sh
+cd packaging/aur && makepkg -si
+```
+
+Depois o app aparece no launcher como **Deco**. Instalado, ele não lê `.env`: o login fica na tela inicial e vai para o keyring.
+
 ## Build
 
 Dependências: Rust stable, GTK 4.12+, libadwaita 1.5+, OpenSSL e pkg-config (para o cliente SSH do TMP).

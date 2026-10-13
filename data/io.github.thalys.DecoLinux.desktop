@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Name=Deco
+GenericName=Mesh Network Manager
+GenericName[pt_BR]=Gerenciador de rede mesh
+Comment=Manage TP-Link Deco mesh networks on the local network
+Comment[pt_BR]=Gerencie a rede mesh TP-Link Deco pela rede local
+Exec=deco-app
+Icon=io.github.thalys.DecoLinux
+Terminal=false
+Categories=Network;GTK;
+Keywords=deco;tp-link;mesh;wifi;router;rede;roteador;
+StartupNotify=true
+StartupWMClass=io.github.thalys.DecoLinux

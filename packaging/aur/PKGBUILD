@@ -1,0 +1,42 @@
+# Maintainer: Thalys Penha <36860610+thalyspenha@users.noreply.github.com>
+pkgname=deco-linux-git
+pkgver=0.1.0.r0.g322336d
+pkgrel=1
+pkgdesc='GTK4/libadwaita app to manage TP-Link Deco mesh networks'
+arch=('x86_64' 'aarch64')
+url='https://github.com/thalyspenha/deco_m5_app_linux'
+license=('MIT')
+depends=('gtk4' 'libadwaita' 'openssl' 'dbus')
+makedepends=('cargo' 'git')
+provides=('deco-linux')
+conflicts=('deco-linux')
+source=("$pkgname::git+$url.git")
+sha256sums=('SKIP')
+
+pkgver() {
+  cd "$pkgname"
+  printf '0.1.0.r%s.g%s' "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+  cd "$pkgname"
+  export RUSTUP_TOOLCHAIN=stable
+  cargo fetch --locked --target "$(rustc -vV | sed -n 's/host: //p')"
+}
+
+build() {
+  cd "$pkgname"
+  export RUSTUP_TOOLCHAIN=stable
+  export CARGO_TARGET_DIR=target
+  cargo build --frozen --release -p deco-app
+}
+
+package() {
+  cd "$pkgname"
+  install -Dm755 target/release/deco-app "$pkgdir/usr/bin/deco-app"
+  install -Dm644 data/io.github.thalys.DecoLinux.desktop \
+    "$pkgdir/usr/share/applications/io.github.thalys.DecoLinux.desktop"
+  install -Dm644 data/icons/hicolor/scalable/apps/io.github.thalys.DecoLinux.svg \
+    "$pkgdir/usr/share/icons/hicolor/scalable/apps/io.github.thalys.DecoLinux.svg"
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}
