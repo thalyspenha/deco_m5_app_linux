@@ -39,6 +39,12 @@ Antes de começar: ler `docs/ROADMAP.md` (feito/a fazer) e `docs/PROTOCOL.md` (p
 - Rodar com `XDG_DATA_DIRS=/opt/homebrew/share ./target/debug/deco-app &` (Ghostty sobrescreve XDG_DATA_DIRS e os ícones quebram).
 - Screenshot: `kCGWindowNumber` da janela de 460 px via `CGWindowListCopyWindowInfo(.optionAll, …)` (swift -e), depois `screencapture -x -o -l <id>` (não usar `-R`, captura o que estiver na frente). Se vier só wallpaper, falta permissão de gravação de tela.
 
+## Empacotamento
+
+- `data/`: `.desktop` e ícone (id `io.github.thalys.DecoLinux`, igual ao `APP_ID` e à class no Hyprland).
+- `packaging/aur/PKGBUILD` (`deco-linux-git`, compila do GitHub; só vê o que foi pushado). Precisa de `options=('!lto')`: o LTO padrão do makepkg quebra o link do libssh2 embutido. Após mudar o PKGBUILD, regenerar `.SRCINFO` com `makepkg --printsrcinfo`.
+- Instalado, o app não lê `.env` (só no diretório atual); login vai pelo keyring.
+
 ## Engenharia reversa
 
 - APK do app Deco (`com.tplink.tpm5`, APKMirror, bundle `.apkm`): `unzip` e `jadx --no-res -d <dir> base.apk` numa pasta temporária fora do repo. Opcodes em `com.tplink.libtpnetwork.mesh.global.p`, beans em `com.tplink.tpm5.component.more.*/repository/bo`.
@@ -46,4 +52,4 @@ Antes de começar: ler `docs/ROADMAP.md` (feito/a fazer) e `docs/PROTOCOL.md` (p
 ## Git
 
 - Commits com `36860610+thalyspenha@users.noreply.github.com` (configurar `git config user.email` em cada clone; a conta bloqueia push que expõe e-mail privado). Não usar gmail/outlook.
-- Remote `origin`: `git@github.com-personal:thalyspenha/deco_m5_app_linux.git` no Mac (alias da chave pessoal); no Linux, o host que tiver a chave da conta `thalyspenha`.
+- Remote `origin`: `git@github.com-personal:thalyspenha/deco_m5_app_linux.git` no Mac (alias da chave pessoal); no Linux o mesmo alias `github.com-personal` funciona.
