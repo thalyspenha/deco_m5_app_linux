@@ -5,7 +5,7 @@
 - Endpoint: `http://<deco>/cgi-bin/luci/;stok=/...`, login com a senha do admin local.
 - **Uma sessão admin por vez**: logar derruba o app oficial e vice-versa. Sempre fazer logout logo após a operação (`Session` faz logout no drop).
 - Implementação em Rust: `crates/deco-api`. Referência original: `tplinkrouterc6u.TPLinkDecoClient`.
-- Cobre: firmware, nós mesh (topologia, papel, status de internet), clientes (IP, MAC, banda, velocidade), status WAN, liga/desliga Wi-Fi host/guest/IoT, reboot.
+- Cobre: firmware, nós mesh (topologia, papel, status de internet), clientes (IP, MAC, banda, velocidade), status WAN, estado do Wi-Fi (leitura), reboot. Escrita de Wi-Fi via HTTP falha no firmware 1.9.5; é feita por TMP (ver abaixo).
 
 ### Endpoints explorados (leitura, 2026-10-12)
 

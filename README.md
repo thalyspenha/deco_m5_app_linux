@@ -64,6 +64,7 @@ Dependências: Rust stable, GTK 4.12+, libadwaita 1.5+, OpenSSL e pkg-config (pa
 ```sh
 # Arch / Omarchy
 sudo pacman -S rust gtk4 libadwaita openssl pkgconf
+# NixOS: shell.nix + direnv (`direnv allow`) ou `nix-shell`
 # macOS (desenvolvimento)
 brew install rustup gtk4 libadwaita adwaita-icon-theme pkg-config
 
@@ -105,7 +106,8 @@ cargo run -p deco-api --example reboot_node_test "<deco satélite>"
 ## Docs
 
 - [docs/ROADMAP.md](docs/ROADMAP.md) — o que já foi feito e o que falta
-- [docs/DECISIONS.md](docs/DECISIONS.md) — decisões de stack
+- [docs/decisions.md](docs/decisions.md) — decisões de stack e arquitetura
+- Demais docs em [docs/](docs/): arquitetura, módulos, API, regras de negócio, integrações, infraestrutura, testes, dependências
 - [docs/PROTOCOL.md](docs/PROTOCOL.md) — protocolo: API HTTP, TMP, opcodes e payloads validados
 
 ## Aviso

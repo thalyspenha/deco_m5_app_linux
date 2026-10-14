@@ -3,7 +3,7 @@
 ## Feito
 
 - [x] Prova de conceito em Python (tplinkrouterc6u) — substituída pelo Rust, ver commit 2aea33a
-- [x] `deco-api` em Rust: login RSA/AES, nós, clientes, WAN, estado do Wi-Fi, set_wifi, reboot
+- [x] `deco-api` em Rust: login RSA/AES, nós, clientes, WAN, estado do Wi-Fi, reboot (`set_wifi` HTTP removido; Wi-Fi on/off via TMP)
 - [x] GUI GTK4/libadwaita v0: login com keyring, status, topologia, clientes, switches de Wi-Fi, reiniciar
 - [x] Cliente TMP (`deco_api::tmp`): SSH 20001 + framing TMP + app v2, GETs validados (WAN/DNS, LAN, DHCP, reservas, port forwarding, bloqueados)
 
